@@ -60,17 +60,20 @@ function App() {
       {data && (
         <>
           <MovieGrid movies={data.results} onSelect={openModal} />
-          <ReactPaginate
-            pageCount={data.total_pages}
-            onPageChange={handlePageChange}
-            forcePage={page - 1}
-            pageRangeDisplayed={5}
-            marginPagesDisplayed={1}
-            containerClassName={css.pagination}
-            activeClassName={css.active}
-            nextLabel="→"
-            previousLabel="←"
-          />
+
+          {data.total_pages > 1 && (
+            <ReactPaginate
+              pageCount={data.total_pages}
+              onPageChange={handlePageChange}
+              forcePage={page - 1}
+              pageRangeDisplayed={5}
+              marginPagesDisplayed={1}
+              containerClassName={css.pagination}
+              activeClassName={css.active}
+              nextLabel="→"
+              previousLabel="←"
+            />
+          )}
         </>
       )}
 
