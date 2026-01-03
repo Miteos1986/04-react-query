@@ -20,7 +20,7 @@ function App() {
   const { data, isLoading, isFetching, isSuccess, error } = useQuery({
     queryKey: ["movies", query, page],
     queryFn: () => movieService(query, page),
-    enabled: query !== null,
+    enabled: query !== "",
     placeholderData: keepPreviousData,
   });
 
