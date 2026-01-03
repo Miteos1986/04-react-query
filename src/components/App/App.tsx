@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { Toaster } from "react-hot-toast";
+import { useEffect, useState } from "react";
+//import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import css from "./App.module.css";
 import movieService from "../../services/movieService";
 import type { Movie } from "../../types/movie";
@@ -12,17 +13,22 @@ import MovieModal from "../MovieModal/MovieModal";
 import ReactPaginate from "react-paginate";
 
 function App() {
-  const [query, setQuery] = useState<string | null>(null);
-  const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>("");
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [page, setPage] = useState<number>(1);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isFetching, isSuccess, error } = useQuery({
     queryKey: ["movies", query, page],
-    queryFn: () => movieService(query as string, page),
+    queryFn: () => movieService(query, page),
     enabled: query !== null,
     placeholderData: keepPreviousData,
   });
+
+  useEffect(() => {
+    if (data && data.results.length === 0) {
+      toast.error("No movies found for your request.");
+    }
+  }, [data]);
 
   const handleSearch = (value: string) => {
     setQuery(value);
@@ -34,12 +40,10 @@ function App() {
   };
 
   const openModal = (movie: Movie) => {
-    setModalIsOpen(true);
     setSelectedMovie(movie);
   };
 
   const closeModal = () => {
-    setModalIsOpen(false);
     setSelectedMovie(null);
   };
 
@@ -47,17 +51,18 @@ function App() {
     <>
       <SearchBar onSubmit={handleSearch} />
       <Toaster position="top-right" />
-      {isLoading && (
+      {(isLoading || isFetching) && (
         <strong>
           <Loader />
         </strong>
       )}
-      {isError && (
+
+      {error && (
         <p>
           <ErrorMessage />
         </p>
       )}
-      {data && (
+      {isSuccess && data && (
         <>
           <MovieGrid movies={data.results} onSelect={openModal} />
 
@@ -77,7 +82,7 @@ function App() {
         </>
       )}
 
-      {modalIsOpen && selectedMovie && (
+      {selectedMovie && (
         <MovieModal movie={selectedMovie} onClose={closeModal} />
       )}
     </>
